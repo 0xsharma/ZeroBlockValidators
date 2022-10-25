@@ -61,7 +61,7 @@ async function main() {
                 }
             }
 
-            await fs.appendFile(`./output/outFull-${now}.csv`, `${blockObject.timestamp}, ${i}, ${miner}, ${allTransactions.length}`, function (err) {
+            await fs.appendFile(`./output/outFull-${now}.csv`, `\n${blockObject.timestamp}, ${i}, ${miner}, ${allTransactions.length}`, function (err) {
                 if (err) throw err;
             });
 
