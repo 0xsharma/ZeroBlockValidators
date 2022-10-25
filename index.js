@@ -29,31 +29,40 @@ async function main() {
     var totalBlocks = new Map();
     var emptyBlocks = new Map();
 
-    for (let i = startBlock; i < endblock; i++) {
-        if(i%100===0){
+    for (let i = startBlock; i < endblock;) {
+        if (i % 100 === 0) {
             console.log("Block: " + i);
         }
-        var blockObject = await web3.eth.getBlock(i);
-        var allTransactions = blockObject.transactions;
-        var miner = await getMiner(i)
 
-        if(totalBlocks.has(miner)){
-            totalBlocks.set(miner, parseInt(totalBlocks.get(miner))+1)
-            if(allTransactions.length===0){
-                emptyBlocks.set(miner, parseInt(emptyBlocks.get(miner))+1)
+        try {
+            var blockObject = await web3.eth.getBlock(i);
+            var allTransactions = blockObject.transactions;
+            var miner = await getMiner(i)
+
+            if (totalBlocks.has(miner)) {
+                totalBlocks.set(miner, parseInt(totalBlocks.get(miner)) + 1)
+                if (allTransactions.length === 0) {
+                    emptyBlocks.set(miner, parseInt(emptyBlocks.get(miner)) + 1)
+                }
+            } else {
+                totalBlocks.set(miner, 1)
+                emptyBlocks.set(miner, 0)
+                if (allTransactions.length === 0) {
+                    emptyBlocks.set(miner, 1)
+                }
             }
-        }else{
-            totalBlocks.set(miner, 1)
-            emptyBlocks.set(miner, 0)
-            if(allTransactions.length===0){
-                emptyBlocks.set(miner, 1)
-            }
+
+            i++;
+        } catch (error) {
+            console.log("Warn: " + error)
+            console.log("Retrying block: " + i)
+            timer(1000)
         }
     }
 
     let now = Math.floor(new Date().getTime() / 1000)
 
-    await fs.appendFile(`./output/out-${now}.csv`, `validator, total-blocks, zero-blocks` , function (err) {
+    await fs.appendFile(`./output/out-${now}.csv`, `validator, total-blocks, zero-blocks`, function (err) {
         if (err) throw err;
         console.log('Created output file : ' + `./output/out-${now}.csv`);
     });
@@ -62,7 +71,7 @@ async function main() {
 
 
     for (var [key, value] of totalBlocks.entries()) {
-        await fs.appendFile(`./output/out-${now}.csv`, `\n${key}, ${value}, ${emptyBlocks.get(key)}` , function (err) {
+        await fs.appendFile(`./output/out-${now}.csv`, `\n${key}, ${value}, ${emptyBlocks.get(key)}`, function (err) {
             if (err) throw err;
 
         });
