@@ -69,7 +69,7 @@ async function main() {
         } catch (error) {
             console.log("Warn: " + error)
             console.log("Retrying block: " + i)
-            timer(1000)
+            await timer(1000)
         }   
 
     }
